@@ -8,12 +8,12 @@
 
     use App\SQLiteConnection;
 
-
-    $pdo = (new SQLiteConnection())->connect();
+    $connection = new SQLiteConnection();
+    $pdo = $connection->connect();
     if ($pdo != null){
         echo 'Connected to the SQLite database successfully! <br/>';
-        //$pdo->createTables();
-        //echo '$pdo->getTableList()';
+        print_r($connection->getTableList());
+        //echo $connection->getTableList();
     }else{
         echo 'Whoops, could not connect to the SQLite database! <br/>';
     }

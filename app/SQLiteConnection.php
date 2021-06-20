@@ -14,33 +14,41 @@ class SQLiteConnection {
      */
     private $pdo;
 
-
+    /**
+     * return in instance of the PDO object that connects to the SQLite database
+     */
     public function createTables(){
         $commands = ['CREATE TABLE IF NOT EXISTS posts (
-                        post_id   TEXT NOT NULL PRIMARY KEY,
+                        post_id TEXT PRIMARY KEY,
                         post_title TEXT,
                         post_content TEXT,
                         post_link TEXT,
                         post_is_video INTEGER,
-                        post_media TEXT,
+                        post_media TEXT
                     )',
                     'CREATE TABLE IF NOT EXISTS tags (
-                        tag_id   INTEGER PRIMARY KEY,
+                        tag_id INTEGER PRIMARY KEY,
                         tag_name TEXT NOT NULL
                     )',
                     'CREATE TABLE IF NOT EXISTS postTags (
-                        tag_id INTEGER NOT NULL PRIMARY KEY,
-                        post_id TEXT NOT NULL PRIMARY KEY,
-                        FOREIGN KEY (tag_id,post_id)
-                            REFERENCES projects(post_id) 
+                        tag_id INTEGER NOT NULL,
+                        post_id TEXT NOT NULL,
+  						PRIMARY KEY (tag_id,post_id)
+                        FOREIGN KEY (post_id)
+                            REFERENCES posts(post_id) 
                                 ON UPDATE CASCADE
-                                ON DELETE CASCADE)
-                            REFERENCES tags(tag_id) 
+                                ON DELETE CASCADE,
+  						FOREIGN KEY (post_id)
+                            REFERENCES posts(post_id) 
                                 ON UPDATE CASCADE
                                 ON DELETE CASCADE)'];
         // execute the sql commands to create new tables
         foreach ($commands as $command) {
-            $this->pdo->exec($command);
+            try{
+                $this->pdo->exec($command);
+            }catch (\PDOException $e) {
+                echo $e;
+            }
         }
     }
 
@@ -58,7 +66,7 @@ class SQLiteConnection {
         return $tables;
     }
     /**
-     * return in instance of the PDO object that connects to the SQLite database
+     * return an instance of the PDO object that connects to the SQLite database
      * @return \PDO
      */
     public function connect() {
