@@ -2,6 +2,7 @@
     require 'vendor/autoload.php';
 
     use App\Secrets;
+    use App\SQLiteConnection;
 
     if(isset($_POST['url'])) {
         $url = $_POST['url'];
@@ -24,6 +25,14 @@
         $data = getPostData($url, $authToken);
         if($data != null){
             print_r($data);
+            echo "<br/><br/>";
+            $connection = new SQLiteConnection();
+            $pdo = $connection->connect();
+            if ($pdo != null){
+                $connection->insertPostData($data);
+                echo "<br/><br/>";
+                $connection->getAllPostData();
+            }
         }
         //$accessToken = getAccessToken($secrets);
         //echo "alert('Success!')";

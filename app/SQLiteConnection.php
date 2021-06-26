@@ -70,6 +70,57 @@ class SQLiteConnection {
 
         return $tables;
     }
+
+    /**
+     * Takes an array of post data. They keys are the column names and the values are the values to insert
+     */
+    public function insertPostData($postData){
+        // $keys = "";
+        // $values = "";
+        // foreach($postData as $key => $value){
+        //     if($value != null && $value != ""){
+        //         $predicate = ($keys=="" ? "" : "$keys,");
+        //         $keys = $predicate . $key;
+
+        //         $predicate = ($values=="" ? "" : "$values,");
+        //         $values = $predicate . "'$value'";
+        //     }
+        // }
+        // $sql = "INSERT INTO posts($keys) Values($values);";
+        $sql = 'INSERT INTO posts(post_id,post_title,post_subreddit,post_content,post_html,post_link,post_media,post_is_video,post_video_height,post_video_width) '
+                        . 'VALUES(:post_id,:post_title,:post_subreddit,:post_content,:post_html,:post_link,:post_media,:post_is_video,:post_video_height,:post_video_width)';
+        //echo $sql;
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':post_id' => $postData['post_id'],
+            ':post_title' => $postData['post_title'],
+            ':post_subreddit' => $postData['post_subreddit'],
+            ':post_content' => $postData['post_content'],
+            ':post_html' => $postData['post_html'],
+            ':post_link' => $postData['post_link'],
+            ':post_media' => $postData['post_media'],
+            ':post_is_video' => $postData['post_is_video'],
+            ':post_video_height' => $postData['post_video_height'],
+            ':post_video_width' => $postData['post_video_width'],
+        ]);
+        //$stmt->execute();
+    }
+
+    public function getAllPostData(){
+        $stmt = $this->pdo->query('SELECT post_id, post_title, post_media '
+                                . 'FROM posts');
+        $posts = [];
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $posts[] = [
+                'post_id' => $row['post_id'],
+                'post_title' => $row['post_title'],
+                'post_media' => $row['post_media']
+            ];
+        }
+        print_r($posts);
+        return $posts;
+    }
+
     /**
      * return an instance of the PDO object that connects to the SQLite database
      * @return \PDO
