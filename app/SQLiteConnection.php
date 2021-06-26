@@ -18,13 +18,18 @@ class SQLiteConnection {
      * return in instance of the PDO object that connects to the SQLite database
      */
     public function createTables(){
-        $commands = ['CREATE TABLE IF NOT EXISTS posts (
+        $commands = [
+                    'CREATE TABLE IF NOT EXISTS posts (
                         post_id TEXT PRIMARY KEY,
                         post_title TEXT,
+                        post_subreddit TEXT,
                         post_content TEXT,
+                        post_html TEXT,
                         post_link TEXT,
-                        post_is_video INTEGER,
-                        post_media TEXT
+                        post_media TEXT,
+                        post_is_video TEXT,
+                        post_video_height INTEGER,
+                        post_video_width INTEGER
                     )',
                     'CREATE TABLE IF NOT EXISTS tags (
                         tag_id INTEGER PRIMARY KEY,
