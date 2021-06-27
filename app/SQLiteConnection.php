@@ -75,18 +75,6 @@ class SQLiteConnection {
      * Takes an array of post data. They keys are the column names and the values are the values to insert
      */
     public function insertPostData($postData){
-        // $keys = "";
-        // $values = "";
-        // foreach($postData as $key => $value){
-        //     if($value != null && $value != ""){
-        //         $predicate = ($keys=="" ? "" : "$keys,");
-        //         $keys = $predicate . $key;
-
-        //         $predicate = ($values=="" ? "" : "$values,");
-        //         $values = $predicate . "'$value'";
-        //     }
-        // }
-        // $sql = "INSERT INTO posts($keys) Values($values);";
         $sql = 'INSERT INTO posts(post_id,post_title,post_subreddit,post_content,post_html,post_link,post_media,post_is_video,post_video_height,post_video_width) '
                         . 'VALUES(:post_id,:post_title,:post_subreddit,:post_content,:post_html,:post_link,:post_media,:post_is_video,:post_video_height,:post_video_width)';
         //echo $sql;
@@ -105,6 +93,25 @@ class SQLiteConnection {
         ]);
         //$stmt->execute();
     }
+    public function addTag($tagName){
+        $sql = 'INSERT INTO tags(tag_name) '
+                        . 'VALUES(:tag_name)';
+        //echo $sql;
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':tag_name' => $tagName,
+        ]);
+        //$stmt->execute();
+    }
+    public function removeTag($tagId){
+        $sql = 'DELETE FROM tags WHERE tag_id=:tag_id';
+        //echo $sql;
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':tag_id' => $tagId,
+        ]);
+        //$stmt->execute();
+    }
 
     public function getAllPostData(){
         $stmt = $this->pdo->query('SELECT post_id, post_title, post_media '
@@ -117,8 +124,21 @@ class SQLiteConnection {
                 'post_media' => $row['post_media']
             ];
         }
-        print_r($posts);
+        //print_r($posts);
         return $posts;
+    }
+    public function getAllTags(){
+        $stmt = $this->pdo->query('SELECT tag_id, tag_name '
+                                . 'FROM tags');
+        $tags = [];
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $tags[] = [
+                'tag_id' => $row['tag_id'],
+                'tag_name' => $row['tag_name']
+            ];
+        }
+        //print_r($tags);
+        return $tags;
     }
 
     /**

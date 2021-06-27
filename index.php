@@ -1,5 +1,117 @@
 <?php
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
 
+    require 'vendor/autoload.php';
+    use App\SQLiteConnection;
+?>
+<html>
+    <head>
+        <title>Reddit Post Saver</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var $form = $('#newTagForm');
+                $form.submit(function(){
+                    $.post($(this).attr('action'), $(this).serialize(), function(response){
+                            // do something here on success
+                    },'json');
+                    function show_popup(){
+                        location.reload();
+                    };
+                    window.setTimeout( show_popup, 500 );
+                    
+                    return false;
+                    
+                });
+                $('button').click(function() {
+                    var id = $(this).attr('id');
+                    if(id != "savePostFormSubmit" || id != "addTagFormSubmit"){
+                        var ajaxurl = 'tags.php';
+                        data =  {removeTag: id};
+                        $.post(ajaxurl, data, function(response){
+                            // do something here on success
+                        },'json');
+                        function show_popup(){
+                            location.reload();
+                        };
+                        window.setTimeout( show_popup, 500 );
+                    }
+                    
+                });
+            });
+        </script>
+        <h1 class="text-center">Welcome to the reddit post saver!</h1>
+        <form action="save.php" method="POST">
+            <div class="row">
+                <div class="col-lg-4 col-1"></div>
+                <div class="col-lg-4 col-10">
+                    <label for="url">Url of Reddit post</label>
+                    <input type="url" placeholder="URL to post" name="url"/>
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-1"></div>
+                <div class="col-lg-4 col-10">
+                    <label for="tags">Tags to apply to post</label>
+                    <input name="tags" type="text" disabled />
+                    <br/>
+                    <select name="tagList">
+                        <?php 
+                            $connection = new SQLiteConnection();
+                            $pdo = $connection->connect();
+                            if ($pdo != null){
+                                $tags = $connection->getAllTags();
+                                foreach($tags as $tag){
+                                    $id = $tag['tag_id'];
+                                    $name = $tag['tag_name'];
+                                    echo "<option value=\"$id\">$name</option>";
+                                }
+                            }
+                        ?>
+                    </select>
+                    <input type="submit" value="Submit" id="savePostFormSubmit">
+                </div>
+            </div>
+        </form>
+        <div class="row">
+            <div class="col-lg-4 col-1"></div>
+            <div class="col-lg-4 col-10">
+                <form action="tags.php" method="POST" id="newTagForm">
+                    <h3 class="text-center">Manage Tags</h3>
+                    <input name="newTag" type="text" placeholder="Tag name"/>
+                    
+                    <input type="submit" value="Submit" id="addTagFormSubmit">
+                </form>
+                <h4 class="text-center">Current tags</h4>
+                
+                <?php 
+                    if($tags != null){
+                        foreach($tags as $tag){
+                            $id = $tag['tag_id'];
+                            $name = $tag['tag_name'];
+                            echo "<p class=\"text-center\">$id : $name <button id=\"$id\" class='btn btn-danger'> X </button></p>";
+                        }
+                    }
+                ?>
+                
+            </div>
+        </div>
+        
+        
+        <!-- <img src="https://i.redd.it/ydbsn0p2h7671.jpg" class="w-50"/> -->
+        <!-- <video width="320" height="240" controls>
+            <source src="https://v.redd.it/yl34cq3wih771" type="video/mp4"/>
+        </video> -->
+    </body>
+</html>
+<?php
+/*
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
     error_reporting(E_ALL);
@@ -16,5 +128,5 @@
         //echo $connection->getTableList();
     }else{
         echo 'Whoops, could not connect to the SQLite database! <br/>';
-    }
+    }*/
 ?>
