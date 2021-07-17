@@ -91,7 +91,6 @@ class SQLiteConnection {
             ':post_video_height' => $postData['post_video_height'],
             ':post_video_width' => $postData['post_video_width'],
         ]);
-        //$stmt->execute();
     }
     public function addTag($tagName){
         $sql = 'INSERT INTO tags(tag_name) '
@@ -114,14 +113,22 @@ class SQLiteConnection {
     }
 
     public function getAllPostData(){
-        $stmt = $this->pdo->query('SELECT post_id, post_title, post_media '
+        $stmt = $this->pdo->query('SELECT post_id, post_title, post_subreddit, post_content,' 
+                                    . 'post_html, post_link, post_media, post_is_video, post_video_height, post_video_width '
                                 . 'FROM posts');
         $posts = [];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $posts[] = [
                 'post_id' => $row['post_id'],
                 'post_title' => $row['post_title'],
-                'post_media' => $row['post_media']
+                'post_subreddit' => $row['post_subreddit'],
+                'post_content' => $row['post_content'],
+                'post_html' => $row['post_html'],
+                'post_link' => $row['post_link'],
+                'post_media' => $row['post_media'],
+                'post_is_video' => $row['post_is_video'],
+                'post_video_height' => $row['post_video_height'],
+                'post_video_width' => $row['post_video_width']
             ];
         }
         //print_r($posts);
@@ -139,6 +146,34 @@ class SQLiteConnection {
         }
         //print_r($tags);
         return $tags;
+    }
+    public function getTagsForPost($postId){
+        $stmt = $this->pdo->prepare('SELECT tag_name
+                                    FROM tags JOIN postTags ON tags.tag_id=postTags.tag_id
+                                    WHERE post_id=:post_id');
+        $stmt->execute([
+            ':post_id' => $postId
+        ]);
+        $tags = [];
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $tags[] = [
+                'tag_name' => $row['tag_name']
+            ];
+        }
+        //print_r($tags);
+        return $tags;
+    }
+    public function setTagsForPost($postId, $tags){
+        $sql = 'INSERT INTO postTags(post_id,tag_id) '
+                        . 'VALUES(:post_id,:tag_id)';
+        //echo $sql;
+        foreach ($tags as $tag){
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':post_id' => $postId,
+                ':tag_id' => $tag,
+            ]);
+        }
     }
 
     /**

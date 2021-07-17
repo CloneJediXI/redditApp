@@ -29,10 +29,17 @@
             $connection = new SQLiteConnection();
             $pdo = $connection->connect();
             if ($pdo != null){
-                $connection->insertPostData($data);
+                //$connection->insertPostData($data);
                 echo "<br/><br/>";
-                $connection->getAllPostData();
+                $tags = "";
+                if(isset($_POST['tags'])){
+                    $tags = $_POST['tags'];
+                }
+                setPostTags($data['post_id'], $tags, $connection);
+                //$connection->getAllPostData();
             }
+        }else{
+            echo "No post data!";
         }
         //$accessToken = getAccessToken($secrets);
         //echo "alert('Success!')";
@@ -169,12 +176,10 @@
             $results['post_is_video'] = $data['is_video'];
             $isVideo = $data['is_video'];
             if($isVideo != null){
-                echo "There is a video!<br/>";
                 $results['post_media'] = $data['media']['reddit_video']['fallback_url'];
                 $results['post_video_width'] = $data['media']['reddit_video']['width'];
                 $results['post_video_height'] = $data['media']['reddit_video']['height'];
             }else{
-                echo "There is not a video!<br/>";
                 $results['post_media'] = $data['url'];
                 $results['post_video_width'] = 0;
                 $results['post_video_height'] = 0;
@@ -184,6 +189,11 @@
         }else {
             return null;
         }
+    }
+    function setPostTags($post_id, $tagString, $connection){
+        $tags = explode(",", $tagString);
+        echo "For post $post_id, adding the following tags: $tagString";
+        $connection->setTagsForPost($post_id, $tags);
     }
     function getAccessToken($secrets){
         ini_set('display_errors', 1);

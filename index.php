@@ -78,6 +78,7 @@
             });
         </script>
         <h1 class="text-center">Welcome to the reddit post saver!</h1>
+        <h4 class="text-center"><a href="view.php">View posts</a></h4>
         <form action="save.php" method="POST" id="postSaveForm">
             <div class="row">
                 <div class="col-lg-4 col-1"></div>
