@@ -134,6 +134,34 @@ class SQLiteConnection {
         //print_r($posts);
         return $posts;
     }
+    public function getOnePost($postId){
+        $stmt = $this->pdo->prepare('SELECT post_id, post_title, post_subreddit, post_content,' 
+                                    . 'post_html, post_link, post_media, post_is_video, post_video_height, post_video_width '
+                                . 'FROM posts WHERE post_id=:post_id');
+        $stmt->execute([
+            ':post_id' => $postId
+        ]);
+        $tags = $this->getTagsForPost($postId);
+        $posts = [];
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $posts[] = [
+                'post_id' => $row['post_id'],
+                'post_title' => $row['post_title'],
+                'post_subreddit' => $row['post_subreddit'],
+                'post_content' => $row['post_content'],
+                'post_html' => $row['post_html'],
+                'post_link' => $row['post_link'],
+                'post_media' => $row['post_media'],
+                'post_is_video' => $row['post_is_video'],
+                'post_video_height' => $row['post_video_height'],
+                'post_video_width' => $row['post_video_width'],
+                'tags' => $tags
+            ];
+        }
+        
+        //print_r($posts);
+        return $posts;
+    }
     public function getAllTags(){
         $stmt = $this->pdo->query('SELECT tag_id, tag_name '
                                 . 'FROM tags');
@@ -148,8 +176,8 @@ class SQLiteConnection {
         return $tags;
     }
     public function getTagsForPost($postId){
-        $stmt = $this->pdo->prepare('SELECT tag_name
-                                    FROM tags JOIN postTags ON tags.tag_id=postTags.tag_id
+        $stmt = $this->pdo->prepare('SELECT tags.tag_name, tags.tag_id '
+                                   .'FROM tags JOIN postTags ON tags.tag_id=postTags.tag_id
                                     WHERE post_id=:post_id');
         $stmt->execute([
             ':post_id' => $postId
@@ -157,7 +185,8 @@ class SQLiteConnection {
         $tags = [];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $tags[] = [
-                'tag_name' => $row['tag_name']
+                'tag_name' => $row['tag_name'],
+                'tag_id' => $row['tag_id']
             ];
         }
         //print_r($tags);
@@ -174,6 +203,15 @@ class SQLiteConnection {
                 ':tag_id' => $tag,
             ]);
         }
+    }
+    public function updateTagsForPost($postId, $tags){
+        $stmt = $this->pdo->prepare('DELETE '
+                                   .'FROM postTags 
+                                    WHERE post_id=:post_id');
+        $stmt->execute([
+            ':post_id' => $postId
+        ]);
+        $this -> setTagsForPost($postId, $tags);
     }
 
     /**

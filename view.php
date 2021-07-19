@@ -8,7 +8,7 @@
 ?>
 <html>
     <head>
-        <title>Reddit Post Saver</title>
+        <title>View Posts</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
     </head>
@@ -85,19 +85,36 @@
                 $posts = $connection->getAllPostData();
                 
                 foreach($posts as $post){
-                    echo '<div class="row bg-secondary">';
-                    echo '<div class="col-lg-4 col-1"></div>';
-                    echo '<div class="col-lg-4 col-10 bg-light rounded border-bottom border-dark">';
-                    echo '<h3><a href="'.$post['post_link'].'" target="_blank">'.$post['post_title'].'</a></h3>';
-                    $tags = $connection->getTagsForPost($post['post_id']);
-                    foreach($tags as $tag){
-                        echo '<span class="badge badge-pill badge-info">'.$tag['tag_name'].'</span>';
-                    }
-                    echo '<br />';
-                    echo '<p>'.$post['post_subreddit'].'</p>';
-                    echo '<img src="'.$post['post_media'].'" class="w-100"/>';
-                    echo '</div>';
-                    echo '</div>';
+                    ?>
+                    <div class="row bg-secondary">
+                        <div class="col-lg-4 col-1"></div>
+                        <div class="col-lg-4 col-10 bg-light rounded border-bottom border-dark m-1">
+                            <div class="row">
+                                <div class="col-11">
+                                    <h3><a href="<?php echo $post['post_link'] ?>" target="_blank"><?php echo $post['post_title'] ?></a></h3>
+                                </div>
+                                <div class="col-1">
+                                    <form action="edit.php" method="POST">
+                                        <input name="postId" type="hidden" value="<?php echo $post['post_id'] ?>" />
+                                        <input type="submit" value="&#8942"/>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <?php
+                                $tags = $connection->getTagsForPost($post['post_id']);
+                                foreach($tags as $tag){
+                                    echo '<span class="badge badge-pill badge-info">'.$tag['tag_name'].'</span>';
+                                }
+                                ?>
+                            </div>
+                        
+                            <br />
+                            <p><?php echo $post['post_subreddit'] ?></p>
+                            <img src="<?php echo $post['post_media'] ?>" class="w-100"/>
+                        </div>
+                    </div>   
+                    <?php
                 }
             }
         ?>
