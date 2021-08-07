@@ -29,7 +29,7 @@
             $connection = new SQLiteConnection();
             $pdo = $connection->connect();
             if ($pdo != null){
-                //$connection->insertPostData($data);
+                $connection->insertPostData($data);
                 echo "<br/><br/>";
                 $tags = "";
                 if(isset($_POST['tags'])){
@@ -38,6 +38,7 @@
                 setPostTags($data['post_id'], $tags, $connection);
                 //$connection->getAllPostData();
             }
+            echo "<h1 style='text-align:center;'><a href='view.php'>View Posts -> </a></h1>";
         }else{
             echo "No post data!";
         }

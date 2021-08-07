@@ -113,9 +113,47 @@ class SQLiteConnection {
     }
 
     public function getAllPostData(){
-        $stmt = $this->pdo->query('SELECT post_id, post_title, post_subreddit, post_content,' 
+        $stmt;
+        if (func_num_args() > 1){
+            $tags = func_get_arg(0);
+            $allowFloofs = func_get_arg(1);
+
+            $query = 'SELECT post_id, post_title, post_subreddit, post_content,' 
+                    . 'post_html, post_link, post_media, post_is_video, post_video_height, post_video_width '
+                . 'FROM posts ';
+            if (count($tags) > 0){
+                $query = $query . 'WHERE post_id IN (SELECT post_id FROM postTags WHERE tag_id =:tag_id_0) ';
+            }
+            for ($i = 1; $i < count($tags) ; $i++){
+                $query = $query . 'AND post_id IN (SELECT post_id FROM postTags WHERE tag_id =:tag_id_'.$i.') ';
+            }
+            if (!$allowFloofs){
+                if (count($tags) > 0){
+                    $query = $query . 'AND post_id NOT IN (SELECT post_id FROM postTags WHERE tag_id =:floof_tag) ';
+                } else{
+                    $query = $query . 'WHERE post_id NOT IN (SELECT post_id FROM postTags WHERE tag_id =:floof_tag) ';
+                }
+                
+            }
+
+            $stmt = $this->pdo->prepare($query);
+
+            $executeArray = [];
+            if (!$allowFloofs){
+                $executeArray[':floof_tag'] = 3;
+            }
+            $tagValues = array_values($tags);
+            for ($i = 0; $i < count($tags) ; $i++){
+                $key = ':tag_id_'.$i;
+                $executeArray[$key] = $tagValues[$i];
+            }
+            $stmt->execute($executeArray);
+        }else{
+            $stmt = $this->pdo->query('SELECT post_id, post_title, post_subreddit, post_content,' 
                                     . 'post_html, post_link, post_media, post_is_video, post_video_height, post_video_width '
                                 . 'FROM posts');
+        }
+        
         $posts = [];
         while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             $posts[] = [

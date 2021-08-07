@@ -44,31 +44,60 @@
                 });
             });
         </script>
-        <h4 class="text-center"><a href="index.php">Home</a></h4>
-        <label for="tags">Show posts with tags : </label>
-        <!--<input id="tagsList" name="tags" type="text" disabled /> -->
-        <span role="textbox" id="tagsList" name="tags" style="border: 1px solid #ccc;padding: 1px 6px; margin-left: 5px;"></span>
+        <h1 class="text-center">View Posts</a></h1>
+        <h4 class="text-center"><a href="index.php"> <- Home</a></h4>
+        <div class="row">
+            <div class="col-lg-4 col-1"></div>
+            <div class="col-lg-4 col-10">
+                <form action="view.php" method="PUT">
+                    <label for="floofers">Show Floofers : </label>
+                    <input id="floofersCheck" name="floofers" type="checkbox" <?php if(isset($_GET['floofers'])) {echo "checked";} ?>/>
+                    <br />
+
+                    <label for="tags">Show posts with tags : </label>
+                    <?php
+                    $tagString = "";
+                        if(isset($_GET['tags'])) {
+                            $tagString = $_GET['tags'];
+                            if ($tagString == ""){
+                                $tags = [];
+                            }else {
+                                $tags = explode(",", $tagString);
+                            }
+                        }
+                    ?>
+
+                    <!--<input id="tagsList" name="tags" type="text" disabled /> -->
+                    <span role="textbox" id="tagsList" name="tags" style="border: 1px solid #ccc;padding: 1px 6px; margin-left: 5px;" value="<?php echo $tagString; ?>"></span>
+                    
+                    <input id="tagsIdList" name="tags" type="hidden"/>
+                    <br/>
+                    <select name="tagList" id="tagDrop">
+                        <?php 
+                            $connection = new SQLiteConnection();
+                            $pdo = $connection->connect();
+                            if ($pdo != null){
+                                $tags = $connection->getAllTags();
+                                echo "<option value=\"-1\">Remove all Tags</option>";
+                                foreach($tags as $tag){
+                                    $id = $tag['tag_id'];
+                                    $name = $tag['tag_name'];
+                                    echo "<option value=\"$id\">$name</option>";
+                                }
+                            }
+                        ?>
+                    </select>
+                    <br />
+                    <button id="save" type="submit" class="btn btn-info">Filter</button>
+                </form>
+            </div>
+        </div>
         
-        <input id="tagsIdList" name="tags" type="hidden"/>
-        <br/>
-        <select name="tagList" id="tagDrop">
-            <?php 
-                $connection = new SQLiteConnection();
-                $pdo = $connection->connect();
-                if ($pdo != null){
-                    $tags = $connection->getAllTags();
-                    echo "<option value=\"-1\">Remove all Tags</option>";
-                    foreach($tags as $tag){
-                        $id = $tag['tag_id'];
-                        $name = $tag['tag_name'];
-                        echo "<option value=\"$id\">$name</option>";
-                    }
-                }
-            ?>
-        </select>
         <?php 
             $num = 0;
             $page = 1;
+            $tags = [];
+            $showFloofs = false;
             if(isset($_GET['num'])) {
                 $num = $_GET['num'];
             } else {
@@ -79,11 +108,33 @@
             } else {
                 $page = 1;
             }
+            if(isset($_GET['floofers'])) {
+                $showFloofs = true;
+            }
+            if(isset($_GET['tags'])) {
+                $tagString = $_GET['tags'];
+                if ($tagString == ""){
+                    $tags = [];
+                }else {
+                    $tags = explode(",", $tagString);
+                }
+            }
             $connection = new SQLiteConnection();
             $pdo = $connection->connect();
             if ($pdo != null){
-                $posts = $connection->getAllPostData();
+                $posts = $connection->getAllPostData($tags, $showFloofs);
                 
+                if (count($posts) <1) {
+                    ?>
+                    <div class="row bg-secondary">
+                        <div class="col-lg-4 col-1"></div>
+                        <div class="col-lg-4 col-10 bg-light rounded border-bottom border-dark m-1 p-5">
+                            <h2 class="text-center">No Posts</h2>
+                            
+                        </div>
+                    </div> 
+                    <?php
+                }
                 foreach($posts as $post){
                     ?>
                     <div class="row bg-secondary">
@@ -91,12 +142,12 @@
                         <div class="col-lg-4 col-10 bg-light rounded border-bottom border-dark m-1">
                             <div class="row">
                                 <div class="col-11">
-                                    <h3><a href="<?php echo $post['post_link'] ?>" target="_blank"><?php echo $post['post_title'] ?></a></h3>
+                                    <h3><a href="<?php echo $post['post_link'] ?>" target="_blank" class="text-dark"><?php echo $post['post_title'] ?></a></h3>
                                 </div>
                                 <div class="col-1">
                                     <form action="edit.php" method="POST">
                                         <input name="postId" type="hidden" value="<?php echo $post['post_id'] ?>" />
-                                        <input type="submit" value="&#8942"/>
+                                        <input type="submit" value="&#8942" class=""/>
                                     </form>
                                 </div>
                             </div>
@@ -110,7 +161,9 @@
                             </div>
                         
                             <br />
-                            <p><?php echo $post['post_subreddit'] ?></p>
+                            <p><a href="https://reddit.com/r/<?php echo $post['post_subreddit'] ?>" target="_blank" class="text-dark">
+                                <strong>r/<?php echo $post['post_subreddit'] ?></strong>
+                            </a></p>
                             <img src="<?php echo $post['post_media'] ?>" class="w-100"/>
                         </div>
                     </div>   
